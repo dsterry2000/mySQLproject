@@ -15,9 +15,13 @@ public class ProjectsApp {
     Scanner sc = new Scanner(System.in);
     //@formatter:off
     private List<String> operations = List.of(
-            "1. Add a project"
+            "-1. Exit",
+            "1. Add a project",
+            "2. List projects",
+            "3. Select a project"
     );
     //@formatter:on
+    private Project currentProject;
     public static void main(String[] args){
 
         new ProjectsApp().processUserSelections();
@@ -37,6 +41,11 @@ public class ProjectsApp {
                   case 1:
                       createProject();
                       break;
+                  case 2:
+                      listProjects();
+                      break;
+                  case 3: selectProject();
+                          break;
                   default:
                       System.out.println("\n" + selection + " is not a valid selection. Try again.");
 
@@ -46,6 +55,11 @@ public class ProjectsApp {
             }
         }
 
+    }
+
+    private boolean exitMenu() {
+        System.out.println("\nExiting the menu.");
+        return true;
     }
 
     private void createProject() {
@@ -67,9 +81,22 @@ public class ProjectsApp {
         System.out.println("You have successfully created project: " + dbProject);
     }
 
-    private boolean exitMenu() {
-        System.out.println("\nExiting the menu.");
-        return true;
+    private void listProjects() {
+        List<Project> projects = projectService.fetchAllProjects();
+
+        System.out.println("\nProjects:");
+
+        projects.forEach(project -> System.out.println(" " + project.getProjectId()
+        + ": " + project.getProjectName()));
+    }
+
+    private void selectProject(){
+        listProjects();
+        Integer projectID = getIntInput("Enter a project ID to select a project");
+
+        //Unselect the current project
+        currentProject = null;
+        currentProject = projectService.fetchByProjectID(projectID);//throws an exception if an invalid ID is entered.
     }
 
     private int getUserSelection() {
@@ -84,6 +111,13 @@ public class ProjectsApp {
         System.out.println();
         System.out.println("These are the available selections. Press the Enter key to quit: ");
         operations.forEach(op -> System.out.println("\t" + op));
+
+        if(Objects.isNull(currentProject)){
+            System.out.println("\nYou are not working with a project.");
+        }
+        else{
+            System.out.println("\nYou are working with project: " + currentProject);
+        }
     }
 
     private Integer getIntInput(String prompt) {
