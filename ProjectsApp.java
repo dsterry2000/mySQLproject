@@ -18,7 +18,9 @@ public class ProjectsApp {
             "-1. Exit",
             "1. Add a project",
             "2. List projects",
-            "3. Select a project"
+            "3. Select a project",
+            "4. Update project details",
+            "5. Delete a project"
     );
     //@formatter:on
     private Project currentProject;
@@ -45,6 +47,10 @@ public class ProjectsApp {
                       listProjects();
                       break;
                   case 3: selectProject();
+                          break;
+                  case 4: updateProjectDetails();
+                          break;
+                  case 5: deleteProject();
                           break;
                   default:
                       System.out.println("\n" + selection + " is not a valid selection. Try again.");
@@ -97,6 +103,44 @@ public class ProjectsApp {
         //Unselect the current project
         currentProject = null;
         currentProject = projectService.fetchByProjectID(projectID);//throws an exception if an invalid ID is entered.
+    }
+
+    private void updateProjectDetails() {
+        if(Objects.isNull(currentProject)) {
+            System.out.println("\nPlease select a project.");
+            return;
+        }
+
+        String projectName = getStringInput("Enter the project name [current: " + currentProject.getProjectName() + "]");
+        BigDecimal estimatedHours = getDecimalInput("Enter the estimated hours [current: " + currentProject.getEstimatedHours() + "]");
+        BigDecimal actualHours = getDecimalInput("Enter the actual hours [current: " + currentProject.getActualHours() + "]");
+        Integer difficulty = getIntInput("Enter the difficulty level (1-5) [current: " + currentProject.getDifficulty() + "]");
+        String notes = getStringInput("Enter project notes [current: " + currentProject.getNotes() + "]");
+
+        Project project = new Project();
+
+        project.setProjectId(currentProject.getProjectId());
+        project.setProjectName(Objects.isNull(projectName) ? currentProject.getProjectName() : projectName);
+        project.setEstimatedHours(Objects.isNull(estimatedHours) ? currentProject.getEstimatedHours() : estimatedHours);
+        project.setActualHours(Objects.isNull(actualHours) ? currentProject.getActualHours() : actualHours);
+        project.setDifficulty(Objects.isNull(difficulty) ? currentProject.getDifficulty() : difficulty);
+        project.setNotes(Objects.isNull(notes) ? currentProject.getNotes() : notes);
+
+        projectService.modifyProjectDetails(project);
+        currentProject = projectService.fetchByProjectID(currentProject.getProjectId());
+    }
+
+    private void deleteProject() {
+        listProjects();
+
+        Integer projectID = getIntInput("Enter Project ID to delete a project: ");
+
+        projectService.deleteProject(projectID);
+        System.out.println("Project " + projectID + " was successfully deleted.");
+
+        if(Objects.isNull(currentProject) && currentProject.getProjectId().equals(projectID)){
+            currentProject = null;
+        }
     }
 
     private int getUserSelection() {
